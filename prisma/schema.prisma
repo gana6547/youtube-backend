@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String  @id      @default(uuid())
+  username        String  @unique
+  password        String
+  gender          Gender
+  channelName     String?
+  banner          String?
+  profilePicture  String?
+  subscriberCount Int     @default(0)
+  description     String?  
+  playlist        Playlist[]
+  comment         Comment[]
+  likes           Like[]
+  WatchHistory    History[]
+  subscribers     Subscription[] @relation("ChannelRelation") // People Subscriber to me
+  subscription    Subscription[] @relation("SubscriberRelation") //channel I subscriber to
+  uploads         Uploads[]
+}
+
+model Uploads {
+  id          String    @id     @default(uuid())
+  // slug     String   //reflect in browsers url  like /youtube.com/djnvldfv_vjfvre second id to reach to the video
+  title       String   @default("")
+  videoUrl    String
+  comment     Comment[]
+  thubnail    String
+  userId      String
+  playlists   PlaylistVideo[]
+  views       Int      @default(0)
+  like        Like[]
+  WatchHistory History[]
+  createdAt   DateTime  @default(now())
+  user        User    @relation(fields: [userId] , references: [id])
+}
+
+
+model Comment{
+  id          String    @id    @default(uuid())
+  content     String   
+  userId      String
+  videoId     String
+  parentId    String?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId],references: [id])
+  video       Uploads   @relation(fields: [videoId], references: [id])
+  commment    Comment?  @relation("CommentReplies",fields: [parentId] , references: [id]) //self-relation
+  replies     Comment[] @relation("CommentReplies")
+}
+
+model Subscription{
+  id              String    @id   @default(uuid())
+  subscriberId    String
+  channelOwnerId  String
+  subscriber      User      @relation("SubscriberRelation",fields: [subscriberId] , references: [id])  
+  channelOwner    User      @relation("ChannelRelation",fields: [channelOwnerId] ,references: [id])
+  @@unique([subscriberId,channelOwnerId])
+}
+
+model Like{
+  id        String    @id     @default(uuid())
+  userId    String
+  videoId   String
+  createdAt DateTime  @default(now())
+  user      User    @relation(fields: [userId], references: [id])
+  video     Uploads @relation(fields: [videoId],references: [id])
+  @@unique([userId,videoId])
+}
+
+model History{
+  id          String   @id   @default(uuid())
+  userId      String
+  videoId     String
+  watchedAt   DateTime @default(now())
+  user        User     @relation(fields: [userId],references: [id])
+  video       Uploads  @relation(fields: [videoId],references: [id])
+  @@unique([userId,videoId])
+  @@index([userId])
+}
+
+model Playlist{
+  id      String   @id   @default(uuid())
+  name    String   @default("random") @unique
+  userId  String
+  user    User      @relation(fields: [userId],references: [id])
+  video   PlaylistVideo[]
+  createdAt  DateTime  @default(now())
+}
+
+//junction table
+model PlaylistVideo{
+  playlistId  String  
+  videoId     String
+  playlist    Playlist  @relation(fields: [playlistId] , references: [id])
+  video       Uploads   @relation(fields: [videoId], references: [id])
+  @@id([playlistId,videoId])
+}
+
+enum Type {
+  Unlisted
+  Private
+  Public
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
