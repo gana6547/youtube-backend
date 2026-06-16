@@ -1,1 +1,1 @@
-{"root":["./src/db.ts","./src/index.ts","./src/middleware.ts","./src/optionalAuth.ts","./src/lib/supabase.ts","./src/types/express/index.d.ts"],"version":"6.0.3"}
+{"root":["./src/index.ts","./src/controllers/auth.controller.ts","./src/controllers/video.controller.ts","./src/db/db.ts","./src/lib/supabase.ts","./src/middleware/auth.ts","./src/routes/auth.route.ts","./src/routes/video.route.ts","./src/types/express/index.d.ts","./src/utils/generateTokenandSetCookie.ts"],"version":"6.0.3"}
